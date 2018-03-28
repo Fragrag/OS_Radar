@@ -116,7 +116,7 @@ void setup ()
           .setValue(true)
           .setMode(ControlP5.SWITCH);
      
-  // add numberbox for setting the timer
+  // add numberbox for setting the t mer
   n1 = cp5.addNumberbox("timerOverride")
           .setPosition(160,15)
           .setSize(80,20)
@@ -516,6 +516,18 @@ void displayReturnedValues()
   
   text(weatherModeStr, 240, 60, 40, 20);
   text("weatherMode", 240, 85);
+  
+  //Display time last updated
+  CurrentD = nf(day(), 2);
+  CurrentM = nf(month(), 2);
+  CurrentY = nf(year(), 4);
+  CurrentH = nf(hour(), 2);
+  CurrentMin = nf(minute(), 2);
+
+  text("Last updated:", 245, 25);
+  text(CurrentY + "/" + CurrentM + "/" + CurrentD, 245, 42);
+  text(CurrentH + "h" + CurrentMin, 245, 55);
+    
 }
 
 
