@@ -25,6 +25,7 @@ for up three weeks in a .csv file found in log/
 
 // import controlP5 library for UI
 import controlP5.*;
+import http.requests.*;
 
 // some general variables
 PImage webImg;
@@ -334,7 +335,7 @@ void sampleImage ()
   {
     print ("Image could not be loaded");
   }
-  
+
   if (webImg != null)
   {
     image (webImg, -(positionX - 200), -(positionY - 220));
@@ -460,8 +461,8 @@ void modifyWeatherData (boolean isImgValid, int mode, float value, float clouds)
     xmlMode.setString ("mode", "snow");
     break;
   }
-  
-  // if it rains or snows
+    
+    // if it rains or snows
   if (mode > 0)
   {
     // set amount of precipitation
@@ -479,7 +480,6 @@ void modifyWeatherData (boolean isImgValid, int mode, float value, float clouds)
   // save altered XML file
   saveXML (xmlWeatherData, xmlSave);
 }
-
 
 
 //////////////////////////////////////////
@@ -597,4 +597,20 @@ void logWeatherDataWriteRow()
    
   //Takes the Init* date and time variables as the logfile name
   saveTable(logWeatherData, "log/" + InitY + InitM + InitD + "-" + InitH + "h" + InitMin + ".csv");
+}
+
+// Sends a GET request to input URL and returns whether URL is OK
+boolean isURLOK(String URL)
+{
+  GetRequest URLGetRequest = new GetRequest(URL);
+  URLGetRequest.send();
+  
+  if (URLGetRequest.getHeader("Status") == "Status: 200 OK")
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
