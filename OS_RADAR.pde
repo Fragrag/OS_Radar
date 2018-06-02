@@ -1,27 +1,24 @@
 import http.requests.*;
 
-void setup() {
-  DConfig Config;
-  CWeatherDataProcessor WeatherDataProcessor;
-  
-  Config = new DConfig("config.xml");
+DConfig Config;
+CWeatherDataProcessor WeatherDataProcessor;
+CGUI GUI;
+ControlP5 cp5;
 
+void setup() {
+  
+  size (450, 450);
+  fill (50);
+  rect (0, 0, width, 100);
+
+  Config = new DConfig("config.xml");
   WeatherDataProcessor = new CWeatherDataProcessor(Config);
-  WeatherDataProcessor.GetAnalyzedWeatherData();
+  cp5 = new ControlP5(this);
+  GUI = new CGUI(WeatherDataProcessor, cp5);
   
+  GUI.Setup();
   WeatherDataProcessor.SetWeatherData();
-  println(WeatherDataProcessor.Weather.Mode);
-  println(WeatherDataProcessor.Weather.Value);
-  println(WeatherDataProcessor.Weather.Clouds);
-    
-  WeatherDataProcessor.IsOverridden = true;
-  WeatherDataProcessor.OverrideWeatherMode = 50;
-  WeatherDataProcessor.OverrideWeatherValue = 1;
-  
-  WeatherDataProcessor.SetWeatherData();
-  println(WeatherDataProcessor.Weather.Mode);
-  println(WeatherDataProcessor.Weather.Value);
-  println(WeatherDataProcessor.Weather.Clouds);
+  image (WeatherDataProcessor.Image, -(Config.positionX - 225), -(Config.positionY - 275));
   
 }
 

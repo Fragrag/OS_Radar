@@ -47,6 +47,7 @@ class CWeatherDataProcessor
   boolean IsOverridden = false;
   int OverrideWeatherMode;
   float OverrideWeatherValue;
+  PImage Image;
   
   // Output variables
   boolean IsImgValid;
@@ -90,6 +91,7 @@ class CWeatherDataProcessor
     float SampleBrightness = GetSampleBrightness(SamplePixel);
     DWeather AnalyzedWeatherData;
     AnalyzedWeatherData = new DWeather(0,0,0);
+    
 
     // black screenshot, so set XML date way back
     if (SampleBrightness < 25)
@@ -174,7 +176,8 @@ class CWeatherDataProcessor
     if (webImg != null) 
     {
       IsImgValid = true;
-      image (webImg, -(positionX - 200), -(positionY - 220));
+      //image (webImg, -(positionX - 200), -(positionY - 220));
+      Image = webImg;
       SamplePixel = get (200 , 220);
     }
     
