@@ -197,8 +197,6 @@ class CWeatherDataProcessor
     return Weather;
   }
   
-  // TODO: Create void RefreshImage()
-  
   color GetSamplePixel() 
   {
     PImage webImg = null;
@@ -220,8 +218,17 @@ class CWeatherDataProcessor
     {
       IsImgValid = true;
       image (webImg, -(positionX - 225), -(positionY - 285));
+      
       Image = webImg;
       SamplePixel = get (225 , 285);
+      
+      // Draw target indicating location of sampled pixel
+      stroke(100);
+      strokeWeight(3);
+      line(190, 285, 260, 285); // Horizontal line
+      line (225, 250, 225, 320); // Vertical line
+      noFill();
+      ellipse(225, 285, 50, 50);
     }
     
     return SamplePixel;

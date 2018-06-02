@@ -105,8 +105,8 @@ class CGUI
     
     // Display the WeatherValue
     WeatherValueStr = nf(WeatherDataProcessor.Weather.Value);
-    text(WeatherValueStr, 160, 60, 30, 20);
-    text("WeatherValue", 160, 85);
+    text(WeatherValueStr, 260, 10, 30, 20);
+    text("WeatherValue", 260, 35);
     
     // Display the WeatherMode
     if (WeatherDataProcessor.Weather.Mode == 1)
@@ -122,13 +122,13 @@ class CGUI
       WeatherModeStr = "None";
     }
     
-    text(WeatherModeStr, 240, 60, 40, 20);
-    text("WeatherMode", 240, 85);
+    text(WeatherModeStr, 360, 10, 40, 20);
+    text("WeatherMode", 360,35);
     
     // Display the sampled pixel
     SampledPixelColor = WeatherDataProcessor.Weather.SampledPixel;
     fill(SampledPixelColor);
-    rect(350, 15, 70, 70);
+    rect(400, 50, 40, 40);
   }
   
 }
