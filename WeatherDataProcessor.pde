@@ -29,11 +29,13 @@ class DWeather {
   int Mode;
   float Value;
   float Clouds;
+  color SampledPixel;
 
-  DWeather(int _Mode, float _Value, float _Clouds) {
+  DWeather(int _Mode, float _Value, float _Clouds, color _SampledPixel) {
     Mode = _Mode;
     Value = _Value;
     Clouds = _Clouds;
+    SampledPixel = _SampledPixel;
   }
 }
 
@@ -51,7 +53,7 @@ class CWeatherDataProcessor
   
   // Output variables
   boolean IsImgValid;
-  DWeather Weather = new DWeather(0,0,0);
+  DWeather Weather = new DWeather(0,0,0, color(50,50,50));
   int WeatherMode;
   
   // Constructor
@@ -71,10 +73,53 @@ class CWeatherDataProcessor
    }
   }
   
+  void ExportWeatherData()
+  {
+    // TODO: Check if this calls the correct file
+    XML xmlWeatherData = loadXML(Config.xmlURL);
+    
+    if (IsImgValid == false)
+    {
+      XML xmlDate = xmlWeatherData.getChild("lastupdate");
+      xmlDate.setString("value", "2016-01-01T00:00:00");
+    }
+    
+    XML xmlMode = xmlWeatherData.getChild("precipitation");
+    
+    switch (Weather.Mode)
+    {
+      case 0:
+        xmlMode.setString("mode", "no");
+        break;
+      case 1: 
+        xmlMode.setString("mode", "rain");
+        break;
+      case 2:
+        xmlMode.setString("mode", "snow");
+        break;
+    }
+    
+    if (Weather.Mode > 0)
+    {
+      // Set amount of precipitation
+      xmlMode.setString("value", Float.toString(Weather.Value));
+      
+      // Check if there are enough clouds and if not, set them to calculated value
+      XML xmlClouds = xmlWeatherData.getChild("clouds");
+      float currentClouds = xmlClouds.getFloat("value");
+      if (currentClouds < Weather.Clouds)
+      {
+        xmlClouds.setFloat("value", Weather.Clouds);
+      }
+    }
+    
+    saveXML(xmlWeatherData, Config.xmlSave);
+  }
+  
   DWeather GetOverrideWeatherData()
   {
     DWeather OverrideWeatherData;
-    OverrideWeatherData = new DWeather(0,0,0);
+    OverrideWeatherData = new DWeather(0,0,0, color(50,50,50));
     
     OverrideWeatherData.Mode = OverrideWeatherMode;
     OverrideWeatherData.Value = OverrideWeatherValue;
@@ -89,9 +134,7 @@ class CWeatherDataProcessor
     float SampleHue = GetSampleHue(SamplePixel);
     float SampleSaturation = GetSampleSaturation(SamplePixel);
     float SampleBrightness = GetSampleBrightness(SamplePixel);
-    DWeather AnalyzedWeatherData;
-    AnalyzedWeatherData = new DWeather(0,0,0);
-    
+    DWeather AnalyzedWeatherData = new DWeather(0,0,0, SamplePixel);    
 
     // black screenshot, so set XML date way back
     if (SampleBrightness < 25)
@@ -176,9 +219,9 @@ class CWeatherDataProcessor
     if (webImg != null) 
     {
       IsImgValid = true;
-      //image (webImg, -(positionX - 200), -(positionY - 220));
+      image (webImg, -(positionX - 225), -(positionY - 285));
       Image = webImg;
-      SamplePixel = get (200 , 220);
+      SamplePixel = get (225 , 285);
     }
     
     return SamplePixel;

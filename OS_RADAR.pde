@@ -1,5 +1,6 @@
-import http.requests.*;
 
+
+// Initializing instances
 DConfig Config;
 CWeatherDataProcessor WeatherDataProcessor;
 CGUI GUI;
@@ -15,12 +16,17 @@ void setup() {
   WeatherDataProcessor = new CWeatherDataProcessor(Config);
   cp5 = new ControlP5(this);
   GUI = new CGUI(WeatherDataProcessor, cp5);
-  
-  GUI.Setup();
+    
   WeatherDataProcessor.SetWeatherData();
-  image (WeatherDataProcessor.Image, -(Config.positionX - 225), -(Config.positionY - 275));
+  //GUI.DisplayValues();
+  GUI.SetupGUI();
+  GUI.DisplayValues();
+  println(GUI.WeatherModeStr);
+  WeatherDataProcessor.ExportWeatherData();
   
 }
 
 void draw() {
+  
+
 }

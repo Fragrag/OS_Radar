@@ -7,6 +7,8 @@ class CGUI
   int TimerOverride;
   boolean Override = false;
   boolean Rain_Snow = false;
+  String WeatherValueStr, WeatherModeStr;
+  color SampledPixelColor;
     
   ControlP5 CP5;
   Toggle ToggleOverride, ToggleOverrideType;
@@ -19,7 +21,7 @@ class CGUI
     CP5 = _CP5;
   }
   
-  void Setup() 
+  void SetupGUI() 
   {
     timer = 15;
     
@@ -43,9 +45,10 @@ class CGUI
                        .setValue(timer);
     
     WeatherOverrideValue = CP5.addSlider("sliderValue")
-                              .setPosition(100, 20)
+                              .setPosition(10, 60)
+                              .setSize(100, 20)
                               .setLabel("Amount")
-                              .setRange(30,100);
+                              .setRange(30, 100);
 
     // Adding UI Callbacks
     
@@ -79,7 +82,53 @@ class CGUI
          }
        }
      });
+     
+     NumberBoxTimerOverride.addCallback(new CallbackListener()
+	 {
+		 public void controlEvent(CallbackEvent theEvent)
+		 {
+			if ((theEvent.getAction()==ControlP5.ACTION_RELEASE || theEvent.getAction()==ControlP5.ACTION_RELEASE_OUTSIDE))
+			{
+				timer = TimerOverride;
+			}
+		 }
+	 });
   }
-         
+  
+  void DisplayValues()
+  {
+    fill (50);
+    noStroke();
+    rect(160, 50, 160, 40);
     
+    fill(255);
+    
+    // Display the WeatherValue
+    WeatherValueStr = nf(WeatherDataProcessor.Weather.Value);
+    text(WeatherValueStr, 160, 60, 30, 20);
+    text("WeatherValue", 160, 85);
+    
+    // Display the WeatherMode
+    if (WeatherDataProcessor.Weather.Mode == 1)
+    {
+      WeatherModeStr = "Rain";
+    }
+    else if (WeatherDataProcessor.Weather.Mode == 2)
+    {
+      WeatherModeStr = "Snow";
+    }
+    else
+    {
+      WeatherModeStr = "None";
+    }
+    
+    text(WeatherModeStr, 240, 60, 40, 20);
+    text("WeatherMode", 240, 85);
+    
+    // Display the sampled pixel
+    SampledPixelColor = WeatherDataProcessor.Weather.SampledPixel;
+    fill(SampledPixelColor);
+    rect(350, 15, 70, 70);
+  }
+  
 }
