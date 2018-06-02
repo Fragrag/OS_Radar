@@ -1,25 +1,9 @@
-import org.apache.http.StatusLine;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
-
 // This contains a collection of classes which are responsible for
 // pulling in the data from the external source, processing it and 
 // outputting it.
 
-// Config takes in a URL string
-// and loads the configuration 
-// Effectively it'll be a container for the data without any methods.
-
-class CConfig {
-  
+// Data Class DConfig
+class DConfig {  
   String xmlLocation;
   XML xmlConfig;
   int positionX, positionY;
@@ -28,7 +12,7 @@ class CConfig {
   String imgLoad;
   
   // Constructor
-  CConfig(String _xmlLocation) {
+  DConfig(String _xmlLocation) {
     xmlLocation = _xmlLocation;
     xmlConfig = loadXML(xmlLocation);
     positionX = xmlConfig.getChild("imgPosition").getInt("x");
@@ -40,111 +24,132 @@ class CConfig {
 
 }
 
-// InputWeatherData will pull in the data from the external source 
-// and convert it to variables that will be used in OS_Radar
-// Theoretically only the InputWeatherData object will modify these values
-// The rest of the program will only read these
-// Arguments it will take:
-// Config class 
+// Data Class DWeather
+class DWeather {
+  int Mode;
+  float Value;
+  float Clouds;
 
-// Object variables:
-// boolean isValid - Is the source valid
-// 
-// 
-// Functions to be implemented
-// QueryWeatherData - Query from external source and assign it to variables
-// RefreshWeatherData 
-
-class CInputWeatherData {
-  CConfig Config;
-  boolean isURLValid;
-  
-  // Constructor
-  CInputWeatherData(CConfig _Config) {
-    Config = _Config;
-  } 
+  DWeather(int _Mode, float _Value, float _Clouds) {
+    Mode = _Mode;
+    Value = _Value;
+    Clouds = _Clouds;
+  }
 }
+
 
 class CWeatherDataProcessor 
 {
   // Input variables
-  CConfig Config;
+  DConfig Config;
+  
+  // Local variables
+  boolean IsOverridden = false;
+  int OverrideWeatherMode;
+  float OverrideWeatherValue;
   
   // Output variables
   boolean IsImgValid;
+  DWeather Weather = new DWeather(0,0,0);
   int WeatherMode;
-  float WeatherValue;
-  float WeatherClouds;
   
   // Constructor
-  CWeatherDataProcessor(CConfig _Config) 
+  CWeatherDataProcessor(DConfig _Config) 
   {
     Config = _Config;
   }
-    
-  void AnalyzePixel()
+  
+  void SetWeatherData() {
+   if (IsOverridden == true) 
+   {
+     Weather = GetOverrideWeatherData();
+   }
+   else
+   {
+     Weather = GetAnalyzedWeatherData();
+   }
+  }
+  
+  DWeather GetOverrideWeatherData()
   {
-    color SamplePixel = GetSamplePixel();;
+    DWeather OverrideWeatherData;
+    OverrideWeatherData = new DWeather(0,0,0);
+    
+    OverrideWeatherData.Mode = OverrideWeatherMode;
+    OverrideWeatherData.Value = OverrideWeatherValue;
+    OverrideWeatherData.Clouds = 80;
+    
+    return OverrideWeatherData;
+  }
+  
+  DWeather GetAnalyzedWeatherData()
+  {
+    color SamplePixel = GetSamplePixel();
     float SampleHue = GetSampleHue(SamplePixel);
     float SampleSaturation = GetSampleSaturation(SamplePixel);
     float SampleBrightness = GetSampleBrightness(SamplePixel);
+    DWeather AnalyzedWeatherData;
+    AnalyzedWeatherData = new DWeather(0,0,0);
 
     // black screenshot, so set XML date way back
     if (SampleBrightness < 25)
     {
       IsImgValid = false;
-      return;
+      return AnalyzedWeatherData;
     }
     
     // no precipitation
     if (SampleSaturation < 50)
     {
-       WeatherMode = 0;
-       WeatherValue = 0;
-       return;
+       AnalyzedWeatherData.Mode = 0;
+       AnalyzedWeatherData.Value = 0;
+       return AnalyzedWeatherData;
     }
      
     // rain
     if (SampleHue <= 120)
     {
-       WeatherMode = 1;
+       AnalyzedWeatherData.Mode = 1;
        
        if (SampleHue >= 80)
        {
          SampleBrightness = constrain (SampleBrightness, 114, 205);
-         WeatherValue = map (SampleBrightness, 114, 205, 50, 30);
-         WeatherClouds = map (SampleBrightness, 114, 205, 75, 60);
-         return;
+         AnalyzedWeatherData.Value = map (SampleBrightness, 114, 205, 50, 30);
+         AnalyzedWeatherData.Clouds = map (SampleBrightness, 114, 205, 75, 60);
+         return AnalyzedWeatherData;
        }
        
        if (SampleHue < 80)
        {
          SampleHue = constrain (SampleHue, 0, 60);
-         WeatherValue = map (SampleHue, 0, 60, 70, 51);
-         WeatherClouds = map (SampleHue, 0, 60, 90, 76);
-         return;
+         AnalyzedWeatherData.Value = map (SampleHue, 0, 60, 70, 51);
+         AnalyzedWeatherData.Clouds = map (SampleHue, 0, 60, 90, 76);
+         return AnalyzedWeatherData;
        }
     }
     
     if (SampleHue >= 200)
     {
-      WeatherMode = 1;
+      AnalyzedWeatherData.Mode = 1;
       
-      WeatherValue = 70;
-      WeatherClouds = 90;
-      return;
+      AnalyzedWeatherData.Value = 70;
+      AnalyzedWeatherData.Clouds = 90;
+      return AnalyzedWeatherData;
     }
   
     // snow
     if (SampleHue > 120 && SampleHue < 200)
     {
-      WeatherMode = 2;
+      AnalyzedWeatherData.Mode = 2;
       
       SampleBrightness = constrain (SampleBrightness, 80, 245);
-      WeatherValue = map (SampleBrightness, 80, 245, 100, 30);
-      WeatherClouds = map (SampleBrightness, 80, 245, 100, 60);
-      return;
+      AnalyzedWeatherData.Value = map (SampleBrightness, 80, 245, 100, 30);
+      AnalyzedWeatherData.Clouds = map (SampleBrightness, 80, 245, 100, 60);
+      return AnalyzedWeatherData;
     }
+    
+    // If nothing of the above triggers, return the previous Weather settings
+    return Weather;
   }
   
   // TODO: Create void RefreshImage()
