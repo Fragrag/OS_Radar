@@ -3,7 +3,6 @@ import controlP5.*;
 class CGUI 
 {
   CWeatherDataProcessor WeatherDataProcessor;
-  public int timer;
   int TimerOverride;
   boolean Override = false;
   boolean Rain_Snow = false;
@@ -99,7 +98,7 @@ class CGUI
   {
     fill (50);
     noStroke();
-    rect(160, 50, 160, 40);
+    rect(260, 10, 360, 35);
     
     fill(255);
     
@@ -123,7 +122,7 @@ class CGUI
     }
     
     text(WeatherModeStr, 360, 10, 40, 20);
-    text("WeatherMode", 360,35);
+    text("WeatherMode", 360, 35);
     
     // Display the sampled pixel
     SampledPixelColor = WeatherDataProcessor.Weather.SampledPixel;
