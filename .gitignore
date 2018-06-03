@@ -4,3 +4,5 @@ weatherData.xml
 
 # log
 log/*
+application.windows32/*
+application.windows64/*
