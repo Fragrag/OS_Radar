@@ -3,7 +3,10 @@ import controlP5.*;
 class CGUI 
 {
   CWeatherDataProcessor WeatherDataProcessor;
+  int Timer = 15;
+  
   int TimerOverride;
+  float OverrideValue = 85;
   boolean Override = false;
   boolean Rain_Snow = false;
   String WeatherValueStr, WeatherModeStr;
@@ -22,8 +25,6 @@ class CGUI
   
   void SetupGUI() 
   {
-    timer = 15;
-    
     // Setup GUI elements
     ToggleOverride = CP5.addToggle("Override")
                         .setPosition(10, 15)
@@ -37,17 +38,18 @@ class CGUI
                             .setMode(ControlP5.SWITCH);
                             
     NumberBoxTimerOverride = CP5.addNumberbox("TimerOverride")
-                       .setPosition(160, 15)
-                       .setSize(80, 20)
-                       .setRange(0, 300)
-                       .setLabel("Timer")
-                       .setValue(timer);
+                                .setPosition(160, 15)
+                                .setSize(80, 20)
+                                .setRange(0, 300)
+                                .setLabel("Timer")
+                                .setValue(Timer);
     
-    WeatherOverrideValue = CP5.addSlider("sliderValue")
+    WeatherOverrideValue = CP5.addSlider("OverrideValue")
                               .setPosition(10, 60)
                               .setSize(100, 20)
                               .setLabel("Amount")
-                              .setRange(30, 100);
+                              .setRange(30, 100)
+                              .setValue(60);
 
     // Adding UI Callbacks
     
@@ -57,15 +59,15 @@ class CGUI
        {
          if (theEvent.getAction()==ControlP5.ACTION_RELEASE && Override == true)
          {
+           OverrideWeatherData();
+           Timer = TimerOverride;
            WeatherDataProcessor.IsOverridden = true;
-           WeatherDataProcessor.SetWeatherData();
-           timer = TimerOverride;
          }
          
          if (theEvent.getAction()==ControlP5.ACTION_RELEASE && Override == false)
          {
+           Timer = 0;
            WeatherDataProcessor.IsOverridden = false;
-           timer = 0;
          }
        }
      });
@@ -76,22 +78,34 @@ class CGUI
        {
          if (theEvent.getAction()==ControlP5.ACTION_RELEASE && Override == true)
          {
-           WeatherDataProcessor.IsOverridden = true; //Might be unneccesary due to this action already done by ToggleOverride
-           WeatherDataProcessor.SetWeatherData();
+           OverrideWeatherData();
          }
        }
      });
      
+     WeatherOverrideValue.addCallback(new CallbackListener()
+     {
+       public void controlEvent(CallbackEvent theEvent)
+       {
+         if((theEvent.getAction()==ControlP5.ACTION_RELEASE || theEvent.getAction()==ControlP5.ACTION_RELEASE_OUTSIDE) && Override == true)
+         {
+           OverrideWeatherData();
+         }
+       }
+     });
+
+     
      NumberBoxTimerOverride.addCallback(new CallbackListener()
-	 {
+	   {
 		 public void controlEvent(CallbackEvent theEvent)
 		 {
 			if ((theEvent.getAction()==ControlP5.ACTION_RELEASE || theEvent.getAction()==ControlP5.ACTION_RELEASE_OUTSIDE))
 			{
-				timer = TimerOverride;
+				Timer = TimerOverride;
 			}
 		 }
 	 });
+
   }
   
   void DisplayValues()
@@ -128,6 +142,25 @@ class CGUI
     SampledPixelColor = WeatherDataProcessor.Weather.SampledPixel;
     fill(SampledPixelColor);
     rect(400, 50, 40, 40);
+  }
+  
+  void OverrideWeatherData()
+  {
+    Override = true;
+    
+    if (Rain_Snow == true)
+    {
+      WeatherDataProcessor.OverrideWeatherMode = 1;
+    }
+    else
+    {
+      WeatherDataProcessor.OverrideWeatherMode = 2;
+    }
+    
+    WeatherDataProcessor.OverrideWeatherValue = OverrideValue;
+    WeatherDataProcessor.Weather.Clouds = map(OverrideValue, 30, 100, 60, 100);
+    
+    WeatherDataProcessor.SetWeatherData();
   }
   
 }

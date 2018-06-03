@@ -21,7 +21,6 @@ class DConfig {
     xmlSave = xmlConfig.getChild("xmlSaveLocation").getString("path"); // C:/Users/Administrator/Dropbox/Weatherdata/
     imgLoad = xmlConfig.getChild("imgLoad").getString("path");
   }
-
 }
 
 // Data Class DWeather
@@ -44,6 +43,7 @@ class CWeatherDataProcessor
 {
   // Input variables
   DConfig Config;
+  CGUI GUI;
   
   // Local variables
   boolean IsOverridden = false;
@@ -57,9 +57,10 @@ class CWeatherDataProcessor
   int WeatherMode;
   
   // Constructor
-  CWeatherDataProcessor(DConfig _Config) 
+  CWeatherDataProcessor(DConfig _Config, CGUI _GUI) 
   {
     Config = _Config;
+    GUI = _GUI;
   }
   
   void SetWeatherData() {

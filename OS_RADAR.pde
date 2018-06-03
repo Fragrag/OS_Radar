@@ -1,11 +1,10 @@
 // Initializing global variables
-int timer = 15;
 
 // Initializing instances
 DConfig Config;
 CWeatherDataProcessor WeatherDataProcessor;
 CGUI GUI;
-ControlP5 cp5;
+ControlP5 CP5;
 
 void setup() 
 {
@@ -15,14 +14,12 @@ void setup()
 
   // Starting instances
   Config = new DConfig("config.xml");
-  WeatherDataProcessor = new CWeatherDataProcessor(Config);
-  cp5 = new ControlP5(this);
-  GUI = new CGUI(WeatherDataProcessor, cp5);
+  WeatherDataProcessor = new CWeatherDataProcessor(Config, GUI);
+  CP5 = new ControlP5(this);
+  GUI = new CGUI(WeatherDataProcessor, CP5);
   
   GUI.SetupGUI();
   RefreshWeatherData();
-  
-  println(GUI.WeatherModeStr);
   
 }
 
@@ -30,10 +27,10 @@ void draw()
 {
   SetTimer();
   
-  if (timer <= 0 && GUI.Override == false)
+  if (GUI.Timer <= 0 && GUI.Override == false)
   {
-    timer = 15;
-    GUI.NumberBoxTimerOverride.setValue(timer);
+    GUI.Timer = 15;
+    GUI.NumberBoxTimerOverride.setValue(GUI.Timer);
     WeatherDataProcessor.IsOverridden = false;
     
     RefreshWeatherData();
@@ -45,10 +42,10 @@ void SetTimer()
   if (second() == 0)
   {
     delay(2000);
-    timer --;
-    GUI.NumberBoxTimerOverride.setValue(timer);
+    GUI.Timer --;
+    GUI.NumberBoxTimerOverride.setValue(GUI.Timer);
     
-    if (timer <= 0 && GUI.Override == true)
+    if (GUI.Timer <= 0 && GUI.Override == true)
     {
       GUI.ToggleOverride.setValue(false);
     }
