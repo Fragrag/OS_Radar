@@ -59,9 +59,9 @@ class CGUI
        {
          if (theEvent.getAction()==ControlP5.ACTION_RELEASE && Override == true)
          {
-           OverrideWeatherData();
-           Timer = TimerOverride;
            WeatherDataProcessor.IsOverridden = true;
+           SetOverrideWeatherData();
+           Timer = TimerOverride;
          }
          
          if (theEvent.getAction()==ControlP5.ACTION_RELEASE && Override == false)
@@ -78,7 +78,7 @@ class CGUI
        {
          if (theEvent.getAction()==ControlP5.ACTION_RELEASE && Override == true)
          {
-           OverrideWeatherData();
+           SetOverrideWeatherData();
          }
        }
      });
@@ -89,7 +89,7 @@ class CGUI
        {
          if((theEvent.getAction()==ControlP5.ACTION_RELEASE || theEvent.getAction()==ControlP5.ACTION_RELEASE_OUTSIDE) && Override == true)
          {
-           OverrideWeatherData();
+           SetOverrideWeatherData();
          }
        }
      });
@@ -144,7 +144,7 @@ class CGUI
     rect(400, 50, 40, 40);
   }
   
-  void OverrideWeatherData()
+  void SetOverrideWeatherData()
   {
     Override = true;
     

@@ -46,7 +46,7 @@ class CWeatherDataProcessor
   CGUI GUI;
   
   // Local variables
-  boolean IsOverridden = false;
+  boolean IsOverridden = true;
   int OverrideWeatherMode;
   float OverrideWeatherValue;
   PImage Image;
@@ -220,6 +220,7 @@ class CWeatherDataProcessor
       IsImgValid = true;
       image (webImg, -(positionX - 225), -(positionY - 285));
       
+      // Draw image on interface
       Image = webImg;
       SamplePixel = get (225 , 285);
       
