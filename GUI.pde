@@ -9,7 +9,8 @@ class CGUI
   float OverrideValue = 85;
   boolean Override = false;
   boolean Rain_Snow = false;
-  String WeatherValueStr, WeatherModeStr;
+  String WeatherValueStr;
+  String WeatherModeStr;
   color SampledPixelColor;
     
   ControlP5 CP5;

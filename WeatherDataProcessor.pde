@@ -43,10 +43,9 @@ class CWeatherDataProcessor
 {
   // Input variables
   DConfig Config;
-  CGUI GUI;
   
   // Local variables
-  boolean IsOverridden = true;
+  boolean IsOverridden = false;
   int OverrideWeatherMode;
   float OverrideWeatherValue;
   PImage Image;
@@ -57,10 +56,9 @@ class CWeatherDataProcessor
   int WeatherMode;
   
   // Constructor
-  CWeatherDataProcessor(DConfig _Config, CGUI _GUI) 
+  CWeatherDataProcessor(DConfig _Config) 
   {
     Config = _Config;
-    GUI = _GUI;
   }
   
   void SetWeatherData() {
