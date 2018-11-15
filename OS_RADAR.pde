@@ -1,8 +1,8 @@
 // Initializing global variables
 
 // Initializing instances
-DConfig Config;
-CWeatherDataProcessor WeatherDataProcessor;
+//DConfig Config;
+//CWeatherDataProcessor WeatherDataProcessor;
 CGUI GUI;
 ControlP5 CP5;
 
@@ -13,10 +13,10 @@ void setup()
   rect(0, 0, width, 100);
 
   // Starting instances
-  Config = new DConfig("config.xml");
-  WeatherDataProcessor = new CWeatherDataProcessor(Config);
+  //Config = new DConfig("config.xml");
+  //WeatherDataProcessor = new CWeatherDataProcessor(Config);
   CP5 = new ControlP5(this);
-  GUI = new CGUI(WeatherDataProcessor, CP5);
+  GUI = new CGUI(CP5);
   
   GUI.SetupGUI();
   RefreshWeatherData();
@@ -40,11 +40,12 @@ void SetTimer()
     {
       GUI.ToggleOverride.setValue(false);
     }
+    
     else if(GUI.Timer <= 0 && GUI.Override == false)
     {
       GUI.Timer = 15;
       GUI.NumberBoxTimerOverride.setValue(GUI.Timer);
-      WeatherDataProcessor.IsOverridden = false;
+      GUI.WeatherDataProcessor.IsOverridden = false;
       
       RefreshWeatherData();
     }
@@ -53,7 +54,7 @@ void SetTimer()
 
 void RefreshWeatherData()
 {
-  WeatherDataProcessor.SetWeatherData();
+  GUI.WeatherDataProcessor.SetWeatherData();
   GUI.DisplayValues();
-  WeatherDataProcessor.ExportWeatherData();
+  GUI.WeatherDataProcessor.ExportWeatherData();
 }

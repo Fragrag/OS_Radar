@@ -2,6 +2,7 @@ import controlP5.*;
 
 class CGUI 
 {
+  DConfig Config;
   CWeatherDataProcessor WeatherDataProcessor;
   int Timer = 15;
   
@@ -18,9 +19,10 @@ class CGUI
   Numberbox NumberBoxTimerOverride;
   Slider WeatherOverrideValue;
   
-  CGUI (CWeatherDataProcessor _WeatherDataProcessor, ControlP5 _CP5)
+  CGUI (ControlP5 _CP5)
   {
-    WeatherDataProcessor = _WeatherDataProcessor;
+    DConfig Config = new DConfig("config.xml");
+    WeatherDataProcessor = new CWeatherDataProcessor(Config);
     CP5 = _CP5;
   }
   
