@@ -1,4 +1,3 @@
-<!-- Fallback weather data in case OS_Radar can not reach the source -->
 <?xml version="1.0" encoding="UTF-8"?>
 <current>
   <city id="7290251" name="Berlin Wilmersdorf">

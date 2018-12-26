@@ -4,6 +4,7 @@ import processing.event.*;
 import processing.opengl.*; 
 
 import controlP5.*; 
+import http.requests.*; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -44,6 +45,7 @@ for up three weeks in a .csv file found in log/
 // import controlP5 library for UI
 
 
+
 // some general variables
 PImage webImg;
 XML xmlWeatherData;
@@ -53,8 +55,10 @@ public int timer;
 XML xmlConfig;
 int positionX, positionY;
 String xmlUrl;
+String xmlWeatherDataFallback;
 String xmlSave;
 String imgLoad;
+String imgLoadFallback;
 String CurrentweatherMode;
 
 // variables for analyzing the sampled pixel
@@ -134,7 +138,7 @@ public void setup ()
           .setValue(true)
           .setMode(ControlP5.SWITCH);
      
-  // add numberbox for setting the timer
+  // add numberbox for setting the t mer
   n1 = cp5.addNumberbox("timerOverride")
           .setPosition(160,15)
           .setSize(80,20)
@@ -239,8 +243,10 @@ public void loadConfig ()
   positionX = xmlConfig.getChild("imgPosition").getInt("x");
   positionY = xmlConfig.getChild("imgPosition").getInt("y");
   xmlUrl = xmlConfig.getChild("xmlWeatherData").getString("url");
+  xmlWeatherDataFallback = xmlConfig.getChild("xmlWeatherDataFallback").getString("path");
   xmlSave = xmlConfig.getChild("xmlSaveLocation").getString("path"); // C:/Users/Administrator/Dropbox/Weatherdata/
   imgLoad = xmlConfig.getChild("imgLoad").getString("path");
+  imgLoadFallback = xmlConfig.getChild("imgLoadFallback").getString("path");
 }
 
 /////////////////////////////////////
@@ -344,15 +350,12 @@ public void setTimer ()
 
 public void sampleImage ()
 {
-  try
-  {
-    webImg = loadImage (imgLoad, "png");
+
+  webImg = loadImage (imgLoad, "png");
+  if(webImg == null) {
+    print("Web image could not be loaded, loading fallback image");
+    webImg = loadImage(imgLoadFallback, "png");
   }
-  catch (Exception e)
-  {
-    print ("Image could not be loaded");
-  }
-  
   if (webImg != null)
   {
     image (webImg, -(positionX - 200), -(positionY - 220));
@@ -453,9 +456,16 @@ public void analyzePixel ()
 
 public void modifyWeatherData (boolean isImgValid, int mode, float value, float clouds)
 {
-  // Load XML file from OpenWeatherMap
-  xmlWeatherData = loadXML(xmlUrl);
-  
+  // Load XML file from OpenWeatherMap. If not valid, load xmlWeatherDataFallback
+  // Try loading xmlWeatherData. 
+  try {
+    xmlWeatherData = loadXML(xmlUrl);
+  }
+  catch(Exception e) {
+    print("xmlWeatherData could not be loaded");
+    print("loading fallback data");
+    xmlWeatherData = loadXML(xmlWeatherDataFallback);
+  }
   // if image is black (faulty screenshot) set the date back to january 2016 so it gets rejected
   if (isImgValid == false)
   {
@@ -478,8 +488,8 @@ public void modifyWeatherData (boolean isImgValid, int mode, float value, float 
     xmlMode.setString ("mode", "snow");
     break;
   }
-  
-  // if it rains or snows
+    
+    // if it rains or snows
   if (mode > 0)
   {
     // set amount of precipitation
@@ -499,7 +509,6 @@ public void modifyWeatherData (boolean isImgValid, int mode, float value, float 
 }
 
 
-
 //////////////////////////////////////////
 /////     AUXILIARY FUNCTIONS        /////
 //////////////////////////////////////////
@@ -509,7 +518,11 @@ public void displayReturnedValues()
 {
   fill (50);
   noStroke();
+  //debug stroke drawing:
+  //stroke(255,255,255);
+  //strokeWeight(1);
   rect(160, 50, 160, 40);
+  rect(245, 10, 75, 50);
   
   fill(255);
   
@@ -534,6 +547,18 @@ public void displayReturnedValues()
   
   text(weatherModeStr, 240, 60, 40, 20);
   text("weatherMode", 240, 85);
+  
+  //Display time last updated
+  CurrentD = nf(day(), 2);
+  CurrentM = nf(month(), 2);
+  CurrentY = nf(year(), 4);
+  CurrentH = nf(hour(), 2);
+  CurrentMin = nf(minute(), 2);
+
+  text("Last updated", 245, 25);
+  text(CurrentY + "/" + CurrentM + "/" + CurrentD, 245, 42);
+  text(CurrentH + "h" + CurrentMin, 245, 55);
+    
 }
 
 
@@ -603,6 +628,22 @@ public void logWeatherDataWriteRow()
    
   //Takes the Init* date and time variables as the logfile name
   saveTable(logWeatherData, "log/" + InitY + InitM + InitD + "-" + InitH + "h" + InitMin + ".csv");
+}
+
+// Sends a GET request to input URL and returns whether URL is OK
+public boolean isURLOK(String URL)
+{
+  GetRequest URLGetRequest = new GetRequest(URL);
+  URLGetRequest.send();
+  
+  if (URLGetRequest.getHeader("Status") == "Status: 200 OK")
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
   public void settings() {  size (400,400); }
   static public void main(String[] passedArgs) {
