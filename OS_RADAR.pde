@@ -36,8 +36,10 @@ public int timer;
 XML xmlConfig;
 int positionX, positionY;
 String xmlUrl;
+String xmlWeatherDataFallback;
 String xmlSave;
 String imgLoad;
+String imgLoadFallback;
 String CurrentweatherMode;
 
 // variables for analyzing the sampled pixel
@@ -222,8 +224,10 @@ void loadConfig ()
   positionX = xmlConfig.getChild("imgPosition").getInt("x");
   positionY = xmlConfig.getChild("imgPosition").getInt("y");
   xmlUrl = xmlConfig.getChild("xmlWeatherData").getString("url");
+  xmlWeatherDataFallback = xmlConfig.getChild("xmlWeatherDataFallback").getString("path");
   xmlSave = xmlConfig.getChild("xmlSaveLocation").getString("path"); // C:/Users/Administrator/Dropbox/Weatherdata/
   imgLoad = xmlConfig.getChild("imgLoad").getString("path");
+  imgLoadFallback = xmlConfig.getChild("imgLoadFallback").getString("path");
 }
 
 /////////////////////////////////////
@@ -327,15 +331,12 @@ void setTimer ()
 
 void sampleImage ()
 {
-  try
-  {
-    webImg = loadImage (imgLoad, "png");
-  }
-  catch (Exception e)
-  {
-    print ("Image could not be loaded");
-  }
 
+  webImg = loadImage (imgLoad, "png");
+  if(webImg == null) {
+    print("Web image could not be loaded, loading fallback image");
+    webImg = loadImage(imgLoadFallback, "png");
+  }
   if (webImg != null)
   {
     image (webImg, -(positionX - 200), -(positionY - 220));
@@ -436,9 +437,16 @@ void analyzePixel ()
 
 void modifyWeatherData (boolean isImgValid, int mode, float value, float clouds)
 {
-  // Load XML file from OpenWeatherMap
-  xmlWeatherData = loadXML(xmlUrl);
-  
+  // Load XML file from OpenWeatherMap. If not valid, load xmlWeatherDataFallback
+  // Try loading xmlWeatherData. 
+  try {
+    xmlWeatherData = loadXML(xmlUrl);
+  }
+  catch(Exception e) {
+    print("xmlWeatherData could not be loaded");
+    print("loading fallback data");
+    xmlWeatherData = loadXML(xmlWeatherDataFallback);
+  }
   // if image is black (faulty screenshot) set the date back to january 2016 so it gets rejected
   if (isImgValid == false)
   {
@@ -491,7 +499,11 @@ void displayReturnedValues()
 {
   fill (50);
   noStroke();
+  //debug stroke drawing:
+  //stroke(255,255,255);
+  //strokeWeight(1);
   rect(160, 50, 160, 40);
+  rect(245, 10, 75, 50);
   
   fill(255);
   
@@ -524,7 +536,7 @@ void displayReturnedValues()
   CurrentH = nf(hour(), 2);
   CurrentMin = nf(minute(), 2);
 
-  text("Last updated:", 245, 25);
+  text("Last updated", 245, 25);
   text(CurrentY + "/" + CurrentM + "/" + CurrentD, 245, 42);
   text(CurrentH + "h" + CurrentMin, 245, 55);
     

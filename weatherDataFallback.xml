@@ -1,0 +1,22 @@
+<!-- Fallback weather data in case OS_Radar can not reach the source -->
+<?xml version="1.0" encoding="UTF-8"?>
+<current>
+  <city id="7290251" name="Berlin Wilmersdorf">
+    <coord lat="52.51" lon="13.24"/>
+    <country>DE</country>
+    <sun rise="2018-12-26T07:17:31" set="2018-12-26T14:58:08"/>
+  </city>
+  <temperature max="5" min="5" unit="metric" value="5"/>
+  <humidity unit="%" value="93"/>
+  <pressure unit="hPa" value="1026"/>
+  <wind>
+    <speed name="Moderate breeze" value="7.2"/>
+    <gusts/>
+    <direction code="W" name="West" value="260"/>
+  </wind>
+  <clouds name="broken clouds" value="75"/>
+  <visibility value="3200"/>
+  <precipitation mode="no"/>
+  <weather icon="09d" number="300" value="light intensity drizzle"/>
+  <lastupdate value="2018-12-26T10:20:00"/>
+</current>
