@@ -1,0 +1,55 @@
+Code,Description,PrecipitationMode,Value
+200,thunderstorm with light rain,rain,10
+201,thunderstorm with rain,rain,15
+202,thunderstorm with heavy rain,rain,25
+210,light thunderstorm,no,0
+211,thunderstorm,no,0
+212,heavy thunderstorm,no,0
+221,ragged thunderstorm,no,0
+230,thunderstorm with light drizzle,rain,5
+231,thunderstorm with drizzle,rain,10
+232,thunderstorm with heavy drizzle,rain,15
+300,light intensity drizzle,rain,5
+301,drizzle,rain,10
+302,heavy intensity drizzle,rain,15
+310,light intensity drizzle rain,rain,20
+311,drizzle rain,rain,20
+312,heavy intensity drizzle rain,rain,25
+313,shower rain and drizzle,rain,30
+314,heavy shower rain and drizzle,rain,50
+321,shower drizzle,rain,5
+500,light rain,rain,15
+501,moderate rain,rain,20
+502,heavy intensity rain,rain,35
+503,very heavy rain,rain,50
+504,extreme rain,rain,60
+511,freezing rain,rain,60
+520,light intensity shower rain,rain,5
+521,shower rain,rain,10
+522,heavy intensity shower rain,rain,15
+531,ragged shower rain,rain,20
+600,light snow,snow,10
+601,snow,snow,25
+602,heavy snow,snow,50
+611,sleet,rain,5
+612,shower sleet,rain,15
+615,light rain and snow,rain,20
+616,rain and snow,rain,30
+620,light shower snow,rain,40
+621,shower snow,rain,50
+622,heavy shower snow,rain,60
+701,mist,no,0
+711,smoke,no,0
+721,haze,no,0
+731,"sand, dust whirls",no,0
+741,fog,no,0
+751,sand,no,0
+761,dust,no,0
+762,volcanic ash,no,0
+771,squalls,no,0
+781,tornado,no,0
+800,clear sky ,no,0
+801,few clouds,no,0
+802,scattered clouds,no,0
+803,broken clouds,no,0
+804,overcast clouds,no,0
