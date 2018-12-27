@@ -19,7 +19,8 @@ String GetPrecipitationModeFromTable(Table WeatherIDTable, int WeatherID) {
     return "no";
   }
   else {
-    TableRow result = WeatherIDTable.findRow("Code", WeatherID);
+    TableRow result = WeatherIDTable.findRow(nf(WeatherID), "Code");
+    println(result.getString("PrecipitationMode"));
     return result.getString("PrecipitationMode");
   }
 }
@@ -31,7 +32,8 @@ int GetValueFromTable(Table WeatherIDTable, int WeatherID) {
     return 0;
   }
   else {
-    TableRow result = WeatherIDTable.findRow("Code", WeatherID);
+    TableRow result = WeatherIDTable.findRow(nf(WeatherID), "Code");
+    println(result.getString("Value"));
     return int(result.getString("Value"));
   }
 }

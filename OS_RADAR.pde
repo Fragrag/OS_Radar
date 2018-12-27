@@ -96,8 +96,7 @@ void setup ()
   
   fill (50);
   rect (0, 0, width, 100);
- 
-  
+
   //////////////////////////////////
   //////   ADD UI CONTROLS    //////
   //////////////////////////////////
@@ -207,7 +206,7 @@ void setup ()
   ///////////////////////////////////////
   //////   RUN SCRIPT FIRST TIME   //////
   ///////////////////////////////////////
-  
+  loadWeatherIDTable();
   loadConfig ();
   logWeatherDataSetup();
   runScript ();
@@ -236,11 +235,8 @@ void loadConfig ()
 
 void runScript ()
 {
-  sampleImage ();
-
   if (webImg != null)
   {
-    analyzePixel ();
     modifyWeatherData (isImgValid, weatherMode, weatherValue, weatherClouds);
   }
   else
@@ -322,114 +318,6 @@ void setTimer ()
   }
 }
 
-//////////////////////////////////////////////////////
-//////    SAMPLE DESKTOP SCREENSHOT FUNCTION    //////
-//////////////////////////////////////////////////////
-// loads the captured screenshot and samples the hue, saturation & brightness
-// saturation & brightness are sampled in 8bit, so 100% is equal to a value of 255 (percent = 8bitvalue/255*100)
-// the hue is also sampled in 8bit, but it is translated from a color wheel value (360°) (angle = 8bitvalue/255*360)
-
-void sampleImage ()
-{
-
-  webImg = loadImage (imgLoad, "png");
-  if(webImg == null) {
-    print("Web image could not be loaded, loading fallback image");
-    webImg = loadImage(imgLoadFallback, "png");
-  }
-  if (webImg != null)
-  {
-    image (webImg, -(positionX - 200), -(positionY - 220));
-    color samplePixel = get (200 , 220);
-
-    //fill (0);
-    //rect (0, 0, width, height);
-    
-    fill (50);
-    rect (0, 0, width, 100);
-    
-    fill (samplePixel);
-    rect (320, 15, 65, 70);
-    
-    sampleH = hue (samplePixel);
-    sampleS = saturation (samplePixel);
-    sampleB = brightness (samplePixel);
-    
-    stroke (100);
-    strokeWeight (3);
-    line (150, 220, 250, 220);
-    line (200, 170, 200, 270);
-    noFill ();
-    ellipse (200, 220, 50, 50);
-    
-  }
-}
-
-//////////////////////////////////////////
-//////    ANALYZE PIXEL FUNCTION    //////
-//////////////////////////////////////////
-// analyzes the different components of the analyzed pixel and translates them to variables used to modify the weather data XML
-
-void analyzePixel ()
-{
-  // black screenshot, so set XML date way back
-  if (sampleB < 25)
-  {
-    isImgValid = false;
-    return;
-  }
-  
-  // no precipitation
-  if (sampleS < 50)
-  {
-     weatherMode = 0;
-     weatherValue = 0;
-     return;
-  }
-   
-  // rain
-  if (sampleH <= 120)
-  {
-     weatherMode = 1;
-     
-     if (sampleH >= 80)
-     {
-       sampleB = constrain (sampleB, 114, 205);
-       weatherValue = map (sampleB, 114, 205, 50, 30);
-       weatherClouds = map (sampleB, 114, 205, 75, 60);
-       return;
-     }
-     
-     if (sampleH < 80)
-     {
-       sampleH = constrain (sampleH, 0, 60);
-       weatherValue = map (sampleH, 0, 60, 70, 51);
-       weatherClouds = map (sampleH, 0, 60, 90, 76);
-       return;
-     }
-  }
-  
-  if (sampleH >= 200)
-  {
-    weatherMode = 1;
-    
-    weatherValue = 70;
-    weatherClouds = 90;
-    return;
-  }
-
-  // snow
-  if (sampleH > 120 && sampleH < 200)
-  {
-    weatherMode = 2;
-    
-    sampleB = constrain (sampleB, 80, 245);
-    weatherValue = map (sampleB, 80, 245, 100, 30);
-    weatherClouds = map (sampleB, 80, 245, 100, 60);
-    return;
-  }
-}
-
 ////////////////////////////////////////////////
 //////    MODIFY WEATHER DATA FUNCTION    //////
 ////////////////////////////////////////////////
@@ -454,37 +342,30 @@ void modifyWeatherData (boolean isImgValid, int mode, float value, float clouds)
     xmlDate.setString ("value", "2016-01-01T00:00:00");
   }
   
-  // set mode of precipitation: no, rain or snow
-  XML xmlMode = xmlWeatherData.getChild ("precipitation");
+  // Get weather code from XML
+  XML xmlWeather = xmlWeatherData.getChild("weather");
+  int WeatherID = int(xmlWeather.getString("number"));
   
-  switch (mode)
-  {
-  case 0:
-    xmlMode.setString ("mode", "no");
-    break;
-  case 1:
-    xmlMode.setString ("mode", "rain");
-    break;
-  case 2:
-    xmlMode.setString ("mode", "snow");
-    break;
+  if (GetPrecipitationModeFromTable(WeatherIDTable, WeatherID) == "no") {
+    weatherMode = 0;
+  } 
+  else if (GetPrecipitationModeFromTable(WeatherIDTable, WeatherID) == "rain") {
+    weatherMode = 1;
+  } 
+  else if (GetPrecipitationModeFromTable(WeatherIDTable, WeatherID) == "snow") {
+    weatherMode = 2;
   }
-    
-    // if it rains or snows
-  if (mode > 0)
-  {
-    // set amount of precipitation
-    xmlMode.setString ("value", Float.toString(value)); 
-    
-    // check if there are enough clouds & if not, set them to calculated value
-    XML xmlClouds = xmlWeatherData.getChild ("clouds");
-    float currentClouds = xmlClouds.getFloat ("value");
-    if (currentClouds < clouds)
-    {
-      xmlClouds.setFloat ("value", clouds);
-    }
+  else {
+    weatherMode = 0;
   }
+  weatherValue = float(GetValueFromTable(WeatherIDTable, WeatherID));
+
   
+  // set mode of precipitation and value of precipitation
+  XML xmlPrecipitation = xmlWeatherData.getChild ("precipitation");
+  xmlPrecipitation.setString("mode", GetPrecipitationModeFromTable(WeatherIDTable, WeatherID));
+  xmlPrecipitation.setString("value", nf(GetValueFromTable(WeatherIDTable, WeatherID)));
+
   // save altered XML file
   saveXML (xmlWeatherData, xmlSave);
 }
