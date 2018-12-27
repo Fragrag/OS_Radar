@@ -49,7 +49,8 @@ float sampleB;
 
 // variables for modifying the weather data
 boolean isImgValid;
-int weatherMode;
+String weatherMode;
+int weatherID;
 float weatherValue;
 float weatherClouds;
 
@@ -241,7 +242,7 @@ void runScript ()
   }
   else
   {
-    modifyWeatherData (false, 0, 0, 0);
+    modifyWeatherData (false, "no", 0, 0);
   }
   
   // run displayReturnedValues here after sampleImage is called and values are set
@@ -263,11 +264,11 @@ void weatherOverride ()
   
   if (rain_snow == true)
   { 
-    weatherMode = 1;
+    weatherMode = "rain";
   }  
   else
   {
-    weatherMode = 2;
+    weatherMode = "snow";
   }
         
   weatherValue = sliderValue;
@@ -323,7 +324,7 @@ void setTimer ()
 ////////////////////////////////////////////////
 // loads the XML file from OpenWeatherMap and changes the precipitation & clouds elements to the new variables
 
-void modifyWeatherData (boolean isImgValid, int mode, float value, float clouds)
+void modifyWeatherData (boolean isImgValid, String mode, float value, float clouds)
 {
   // Load XML file from OpenWeatherMap. If not valid, load xmlWeatherDataFallback
   // Try loading xmlWeatherData. 
@@ -344,27 +345,16 @@ void modifyWeatherData (boolean isImgValid, int mode, float value, float clouds)
   
   // Get weather code from XML
   XML xmlWeather = xmlWeatherData.getChild("weather");
-  int WeatherID = int(xmlWeather.getString("number"));
+  weatherID = int(xmlWeather.getString("number"));
   
-  if (GetPrecipitationModeFromTable(WeatherIDTable, WeatherID) == "no") {
-    weatherMode = 0;
-  } 
-  else if (GetPrecipitationModeFromTable(WeatherIDTable, WeatherID) == "rain") {
-    weatherMode = 1;
-  } 
-  else if (GetPrecipitationModeFromTable(WeatherIDTable, WeatherID) == "snow") {
-    weatherMode = 2;
-  }
-  else {
-    weatherMode = 0;
-  }
-  weatherValue = float(GetValueFromTable(WeatherIDTable, WeatherID));
+  weatherMode = GetPrecipitationModeFromTable(WeatherIDTable, weatherID);
+  weatherValue = float(GetValueFromTable(WeatherIDTable, weatherID));
 
   
   // set mode of precipitation and value of precipitation
   XML xmlPrecipitation = xmlWeatherData.getChild ("precipitation");
-  xmlPrecipitation.setString("mode", GetPrecipitationModeFromTable(WeatherIDTable, WeatherID));
-  xmlPrecipitation.setString("value", nf(GetValueFromTable(WeatherIDTable, WeatherID)));
+  xmlPrecipitation.setString("mode", GetPrecipitationModeFromTable(WeatherIDTable, weatherID));
+  xmlPrecipitation.setString("value", nf(GetValueFromTable(WeatherIDTable, weatherID)));
 
   // save altered XML file
   saveXML (xmlWeatherData, xmlSave);
@@ -394,18 +384,7 @@ void displayReturnedValues()
   text("weatherValue", 160, 85);
   
   //Checks weatherMode and displays Snow, Rain or None depending on the conditions
-  if (weatherMode == 1)
-  { 
-    weatherModeStr = "Rain";
-  }
-  else if (weatherMode == 2)
-  {
-    weatherModeStr = "Snow";
-  }
-  else
-  {
-    weatherModeStr = "None";
-  }
+  weatherModeStr = GetPrecipitationModeFromTable(WeatherIDTable, weatherID);
   
   text(weatherModeStr, 240, 60, 40, 20);
   text("weatherMode", 240, 85);
