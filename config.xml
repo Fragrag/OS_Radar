@@ -7,4 +7,5 @@
   <xmlSaveLocation path="weatherData.xml"/>
   <imgLoad path="http://api.wunderground.com/api/3b81a66f1dfa29c8/radar/q/germany/berlin.png?newmaps=1"/>
   <imgLoadFallback path ="imgLoadFallback.png"/>
+  <JSONDarkSky path="https://api.darksky.net/forecast/37193eaf832eadbba10ec27f5de93c07/51.7030,10.69070?exclude=minutely,hourly,daily,alerts,flags"/>
 </config>
