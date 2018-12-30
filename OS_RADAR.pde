@@ -25,7 +25,6 @@ for up three weeks in a .csv file found in log/
 
 // import controlP5 library for UI
 import controlP5.*;
-import http.requests.*;
 
 // some general variables
 PImage webImg;
@@ -96,7 +95,7 @@ void setup ()
   size (400,400);
   
   fill (50);
-  rect (0, 0, width, 100);
+  rect (0, 0, width, 150);
 
   //////////////////////////////////
   //////   ADD UI CONTROLS    //////
@@ -336,28 +335,24 @@ void modifyWeatherData (boolean isImgValid, String mode, float value, float clou
     print("loading fallback data");
     xmlWeatherData = loadXML(xmlWeatherDataFallback);
   }
-  // if image is black (faulty screenshot) set the date back to january 2016 so it gets rejected
-  if (isImgValid == false)
-  {
-    XML xmlDate = xmlWeatherData.getChild ("lastupdate");
-    xmlDate.setString ("value", "2016-01-01T00:00:00");
-  }
   
-  // Get weather code from XML
-  if (isOverridden == false) {
+  // If override is active, set weatherMode and weatherValue to designated values
+  // If not, get weather code from XML, look it up on the table and assign corresponding weatherMode and weatherValue
+  if (isOverridden == true) {
+    XML xmlPrecipitation = xmlWeatherData.getChild ("precipitation");
+    xmlPrecipitation.setString("mode", weatherMode);
+    xmlPrecipitation.setString("value", nf(weatherValue));
+  }
+  else {
+    // set mode of precipitation and value of precipitation
     XML xmlWeather = xmlWeatherData.getChild("weather");
+    XML xmlPrecipitation = xmlWeatherData.getChild ("precipitation");
+    
     weatherID = int(xmlWeather.getString("number"));
     weatherMode = GetPrecipitationModeFromTable(WeatherIDTable, weatherID);
     weatherValue = float(GetValueFromTable(WeatherIDTable, weatherID));
     
     // set mode of precipitation and value of precipitation
-    XML xmlPrecipitation = xmlWeatherData.getChild ("precipitation");
-    xmlPrecipitation.setString("mode", GetPrecipitationModeFromTable(WeatherIDTable, weatherID));
-    xmlPrecipitation.setString("value", nf(GetValueFromTable(WeatherIDTable, weatherID)));
-  }
-  else {
-    // set mode of precipitation and value of precipitation
-    XML xmlPrecipitation = xmlWeatherData.getChild ("precipitation");
     xmlPrecipitation.setString("mode", weatherMode);
     xmlPrecipitation.setString("value", nf(weatherValue));
   }

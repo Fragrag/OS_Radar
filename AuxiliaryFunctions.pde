@@ -83,7 +83,7 @@ void logWeatherDataWriteRow()
     newRow.setString("Date", CurrentY + "/" + CurrentM + "/" + CurrentD);
     newRow.setString("Time", CurrentH + ":" + CurrentMin);
     newRow.setString("WeatherOverride", str(isOverridden));
-    newRow.setString("WeatherMode", weatherModeStr);
+    newRow.setString("WeatherMode", weatherMode);
     newRow.setString("WeatherValue", weatherValueStr);
     newRow.setString("Clouds", cloudsStr); 
     newRow.setString("Temperature", tempValueStr);
@@ -96,7 +96,7 @@ void logWeatherDataWriteRow()
     newRow.setString("Date", CurrentY + "/" + CurrentM + "/" + CurrentD);
     newRow.setString("Time", CurrentH + ":" + CurrentMin);
     newRow.setString("WeatherOverride", str(isOverridden));
-    newRow.setString("WeatherMode", weatherModeStr);
+    newRow.setString("WeatherMode", weatherMode);
     newRow.setString("WeatherValue", weatherValueStr);
     newRow.setString("Clouds", cloudsStr); 
     newRow.setString("Temperature", tempValueStr);
@@ -106,20 +106,4 @@ void logWeatherDataWriteRow()
    
   //Takes the Init* date and time variables as the logfile name
   saveTable(logWeatherData, "log/" + InitY + InitM + InitD + "-" + InitH + "h" + InitMin + ".csv");
-}
-
-// Sends a GET request to input URL and returns whether URL is OK
-boolean isURLOK(String URL)
-{
-  GetRequest URLGetRequest = new GetRequest(URL);
-  URLGetRequest.send();
-  
-  if (URLGetRequest.getHeader("Status") == "Status: 200 OK")
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
 }
