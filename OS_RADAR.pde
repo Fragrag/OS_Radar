@@ -52,6 +52,8 @@ String weatherMode;
 int weatherID;
 float weatherValue;
 float weatherClouds;
+String LastUpdate;
+String weatherType;
 
 // variables for creation of UI controls
 ControlP5 cp5;
@@ -226,7 +228,7 @@ void loadConfig ()
   xmlWeatherDataFallback = xmlConfig.getChild("xmlWeatherDataFallback").getString("path");
   xmlSave = xmlConfig.getChild("xmlSaveLocation").getString("path"); // C:/Users/Administrator/Dropbox/Weatherdata/
   imgLoad = xmlConfig.getChild("imgLoad").getString("path");
-  imgLoadFallback = xmlConfig.getChild("imgLoadFallback").getString("path");
+  imgLoadFallback = xmlConfig.getChild("imgLoadFallback").getString("path"); 
 }
 
 /////////////////////////////////////
@@ -336,6 +338,8 @@ void modifyWeatherData (boolean isImgValid, String mode, float value, float clou
     xmlWeatherData = loadXML(xmlWeatherDataFallback);
   }
   
+  LastUpdate = xmlWeatherData.getChild("lastupdate").getString("value");
+  
   // If override is active, set weatherMode and weatherValue to designated values
   // If not, get weather code from XML, look it up on the table and assign corresponding weatherMode and weatherValue
   if (isOverridden == true) {
@@ -348,6 +352,7 @@ void modifyWeatherData (boolean isImgValid, String mode, float value, float clou
     XML xmlWeather = xmlWeatherData.getChild("weather");
     XML xmlPrecipitation = xmlWeatherData.getChild ("precipitation");
     
+    weatherType = xmlWeather.getString("value");
     weatherID = int(xmlWeather.getString("number"));
     weatherMode = GetPrecipitationModeFromTable(WeatherIDTable, weatherID);
     weatherValue = float(GetValueFromTable(WeatherIDTable, weatherID));

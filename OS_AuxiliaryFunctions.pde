@@ -5,26 +5,15 @@
 // This function displays weatherValue and weatherMode in the GUI
 void displayReturnedValues() 
 {
+  DateTime LastUpdateDateTime = DateStringToDateTime(LastUpdate);
   fill (50);
   noStroke();
   //debug stroke drawing:
   //stroke(255,255,255);
   //strokeWeight(1);
-  rect(160, 50, 160, 40);
-  rect(245, 10, 75, 50);
+  rect(0, 85, width, 65);
   
   fill(255);
-  
-  //Convert weatherValue to a string variable and displays it
-  weatherValueStr = nf(weatherValue);
-  text(weatherValueStr, 160, 60, 30, 20);
-  text("weatherValue", 160, 85);
-  
-  //Checks weatherMode and displays Snow, Rain or None depending on the conditions
-  //weatherModeStr = GetPrecipitationModeFromTable(WeatherIDTable, weatherID);
-  
-  text(weatherMode, 240, 60, 40, 20);
-  text("weatherMode", 240, 85);
   
   //Display time last updated
   CurrentD = nf(day(), 2);
@@ -32,12 +21,29 @@ void displayReturnedValues()
   CurrentY = nf(year(), 4);
   CurrentH = nf(hour(), 2);
   CurrentMin = nf(minute(), 2);
+  
+  text("OS_Radar last updated", 5, 100);
+  text(CurrentY + "/" + CurrentM + "/" + CurrentD + " " + CurrentH + "h" + CurrentMin, 5, 115);
 
-  text("Last updated", 245, 25);
-  text(CurrentY + "/" + CurrentM + "/" + CurrentD, 245, 42);
-  text(CurrentH + "h" + CurrentMin, 245, 55);
-    
-}
+  //Convert weatherValue to a string variable and displays it
+  weatherValueStr = nf(weatherValue);
+  text("Value", 5, 135);
+  text(weatherValueStr, 5, 135, 30, 20);
+
+  //Checks weatherMode and displays Snow, Rain or None depending on the conditions
+  //weatherModeStr = GetPrecipitationModeFromTable(WeatherIDTable, weatherID);
+  text("Mode", 85, 135);
+  text(weatherMode, 85, 135, 40, 20);
+
+  text("OWM last updated (GMT)", width/2-25, 100);
+  text(LastUpdateDateTime.year + "/" + LastUpdateDateTime.month + "/" + LastUpdateDateTime.day + " " + LastUpdateDateTime.hour + "h" + LastUpdateDateTime.minute, width/2-25, 115);
+  
+  text("OWM Number", width/2-25, 135);
+  text(nf(weatherID), width/2-25, 135, 30, 20);
+  
+  text("OWM Type", width/2 + 75, 135);
+  text(weatherType, width/2 + 75, 135, 150, 20);
+  }
 
 
 // Adds a logger to the program to keep track of changes to Olympia
