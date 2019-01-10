@@ -4,7 +4,6 @@ import processing.event.*;
 import processing.opengl.*; 
 
 import controlP5.*; 
-import http.requests.*; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -45,7 +44,6 @@ for up three weeks in a .csv file found in log/
 // import controlP5 library for UI
 
 
-
 // some general variables
 PImage webImg;
 XML xmlWeatherData;
@@ -68,9 +66,12 @@ float sampleB;
 
 // variables for modifying the weather data
 boolean isImgValid;
-int weatherMode;
+String weatherMode;
+int weatherID;
 float weatherValue;
 float weatherClouds;
+String LastUpdate;
+String weatherType;
 
 // variables for creation of UI controls
 ControlP5 cp5;
@@ -114,9 +115,8 @@ public void setup ()
   
   
   fill (50);
-  rect (0, 0, width, 100);
- 
-  
+  rect (0, 0, width, 150);
+
   //////////////////////////////////
   //////   ADD UI CONTROLS    //////
   //////////////////////////////////
@@ -226,7 +226,7 @@ public void setup ()
   ///////////////////////////////////////
   //////   RUN SCRIPT FIRST TIME   //////
   ///////////////////////////////////////
-  
+  loadWeatherIDTable();
   loadConfig ();
   logWeatherDataSetup();
   runScript ();
@@ -246,7 +246,7 @@ public void loadConfig ()
   xmlWeatherDataFallback = xmlConfig.getChild("xmlWeatherDataFallback").getString("path");
   xmlSave = xmlConfig.getChild("xmlSaveLocation").getString("path"); // C:/Users/Administrator/Dropbox/Weatherdata/
   imgLoad = xmlConfig.getChild("imgLoad").getString("path");
-  imgLoadFallback = xmlConfig.getChild("imgLoadFallback").getString("path");
+  imgLoadFallback = xmlConfig.getChild("imgLoadFallback").getString("path"); 
 }
 
 /////////////////////////////////////
@@ -255,16 +255,13 @@ public void loadConfig ()
 
 public void runScript ()
 {
-  sampleImage ();
-
   if (webImg != null)
   {
-    analyzePixel ();
     modifyWeatherData (isImgValid, weatherMode, weatherValue, weatherClouds);
   }
   else
   {
-    modifyWeatherData (false, 0, 0, 0);
+    modifyWeatherData (false, "no", 0, 0);
   }
   
   // run displayReturnedValues here after sampleImage is called and values are set
@@ -286,11 +283,11 @@ public void weatherOverride ()
   
   if (rain_snow == true)
   { 
-    weatherMode = 1;
+    weatherMode = "rain";
   }  
   else
   {
-    weatherMode = 2;
+    weatherMode = "snow";
   }
         
   weatherValue = sliderValue;
@@ -341,120 +338,12 @@ public void setTimer ()
   }
 }
 
-//////////////////////////////////////////////////////
-//////    SAMPLE DESKTOP SCREENSHOT FUNCTION    //////
-//////////////////////////////////////////////////////
-// loads the captured screenshot and samples the hue, saturation & brightness
-// saturation & brightness are sampled in 8bit, so 100% is equal to a value of 255 (percent = 8bitvalue/255*100)
-// the hue is also sampled in 8bit, but it is translated from a color wheel value (360\u00b0) (angle = 8bitvalue/255*360)
-
-public void sampleImage ()
-{
-
-  webImg = loadImage (imgLoad, "png");
-  if(webImg == null) {
-    print("Web image could not be loaded, loading fallback image");
-    webImg = loadImage(imgLoadFallback, "png");
-  }
-  if (webImg != null)
-  {
-    image (webImg, -(positionX - 200), -(positionY - 220));
-    int samplePixel = get (200 , 220);
-
-    //fill (0);
-    //rect (0, 0, width, height);
-    
-    fill (50);
-    rect (0, 0, width, 100);
-    
-    fill (samplePixel);
-    rect (320, 15, 65, 70);
-    
-    sampleH = hue (samplePixel);
-    sampleS = saturation (samplePixel);
-    sampleB = brightness (samplePixel);
-    
-    stroke (100);
-    strokeWeight (3);
-    line (150, 220, 250, 220);
-    line (200, 170, 200, 270);
-    noFill ();
-    ellipse (200, 220, 50, 50);
-    
-  }
-}
-
-//////////////////////////////////////////
-//////    ANALYZE PIXEL FUNCTION    //////
-//////////////////////////////////////////
-// analyzes the different components of the analyzed pixel and translates them to variables used to modify the weather data XML
-
-public void analyzePixel ()
-{
-  // black screenshot, so set XML date way back
-  if (sampleB < 25)
-  {
-    isImgValid = false;
-    return;
-  }
-  
-  // no precipitation
-  if (sampleS < 50)
-  {
-     weatherMode = 0;
-     weatherValue = 0;
-     return;
-  }
-   
-  // rain
-  if (sampleH <= 120)
-  {
-     weatherMode = 1;
-     
-     if (sampleH >= 80)
-     {
-       sampleB = constrain (sampleB, 114, 205);
-       weatherValue = map (sampleB, 114, 205, 50, 30);
-       weatherClouds = map (sampleB, 114, 205, 75, 60);
-       return;
-     }
-     
-     if (sampleH < 80)
-     {
-       sampleH = constrain (sampleH, 0, 60);
-       weatherValue = map (sampleH, 0, 60, 70, 51);
-       weatherClouds = map (sampleH, 0, 60, 90, 76);
-       return;
-     }
-  }
-  
-  if (sampleH >= 200)
-  {
-    weatherMode = 1;
-    
-    weatherValue = 70;
-    weatherClouds = 90;
-    return;
-  }
-
-  // snow
-  if (sampleH > 120 && sampleH < 200)
-  {
-    weatherMode = 2;
-    
-    sampleB = constrain (sampleB, 80, 245);
-    weatherValue = map (sampleB, 80, 245, 100, 30);
-    weatherClouds = map (sampleB, 80, 245, 100, 60);
-    return;
-  }
-}
-
 ////////////////////////////////////////////////
 //////    MODIFY WEATHER DATA FUNCTION    //////
 ////////////////////////////////////////////////
 // loads the XML file from OpenWeatherMap and changes the precipitation & clouds elements to the new variables
 
-public void modifyWeatherData (boolean isImgValid, int mode, float value, float clouds)
+public void modifyWeatherData (boolean isImgValid, String mode, float value, float clouds)
 {
   // Load XML file from OpenWeatherMap. If not valid, load xmlWeatherDataFallback
   // Try loading xmlWeatherData. 
@@ -466,49 +355,33 @@ public void modifyWeatherData (boolean isImgValid, int mode, float value, float 
     print("loading fallback data");
     xmlWeatherData = loadXML(xmlWeatherDataFallback);
   }
-  // if image is black (faulty screenshot) set the date back to january 2016 so it gets rejected
-  if (isImgValid == false)
-  {
-    XML xmlDate = xmlWeatherData.getChild ("lastupdate");
-    xmlDate.setString ("value", "2016-01-01T00:00:00");
-  }
   
-  // set mode of precipitation: no, rain or snow
-  XML xmlMode = xmlWeatherData.getChild ("precipitation");
+  LastUpdate = xmlWeatherData.getChild("lastupdate").getString("value");
   
-  switch (mode)
-  {
-  case 0:
-    xmlMode.setString ("mode", "no");
-    break;
-  case 1:
-    xmlMode.setString ("mode", "rain");
-    break;
-  case 2:
-    xmlMode.setString ("mode", "snow");
-    break;
+  // If override is active, set weatherMode and weatherValue to designated values
+  // If not, get weather code from XML, look it up on the table and assign corresponding weatherMode and weatherValue
+  if (isOverridden == true) {
+    XML xmlPrecipitation = xmlWeatherData.getChild ("precipitation");
+    xmlPrecipitation.setString("mode", weatherMode);
+    xmlPrecipitation.setString("value", nf(weatherValue));
   }
+  else {
+    // set mode of precipitation and value of precipitation
+    XML xmlWeather = xmlWeatherData.getChild("weather");
+    XML xmlPrecipitation = xmlWeatherData.getChild ("precipitation");
     
-    // if it rains or snows
-  if (mode > 0)
-  {
-    // set amount of precipitation
-    xmlMode.setString ("value", Float.toString(value)); 
+    weatherType = xmlWeather.getString("value");
+    weatherID = PApplet.parseInt(xmlWeather.getString("number"));
+    weatherMode = GetPrecipitationModeFromTable(WeatherIDTable, weatherID);
+    weatherValue = PApplet.parseFloat(GetValueFromTable(WeatherIDTable, weatherID));
     
-    // check if there are enough clouds & if not, set them to calculated value
-    XML xmlClouds = xmlWeatherData.getChild ("clouds");
-    float currentClouds = xmlClouds.getFloat ("value");
-    if (currentClouds < clouds)
-    {
-      xmlClouds.setFloat ("value", clouds);
-    }
+    // set mode of precipitation and value of precipitation
+    xmlPrecipitation.setString("mode", weatherMode);
+    xmlPrecipitation.setString("value", nf(weatherValue));
   }
-  
   // save altered XML file
   saveXML (xmlWeatherData, xmlSave);
 }
-
-
 //////////////////////////////////////////
 /////     AUXILIARY FUNCTIONS        /////
 //////////////////////////////////////////
@@ -516,37 +389,15 @@ public void modifyWeatherData (boolean isImgValid, int mode, float value, float 
 // This function displays weatherValue and weatherMode in the GUI
 public void displayReturnedValues() 
 {
+  DateTime LastUpdateDateTime = DateStringToDateTime(LastUpdate);
   fill (50);
   noStroke();
   //debug stroke drawing:
   //stroke(255,255,255);
   //strokeWeight(1);
-  rect(160, 50, 160, 40);
-  rect(245, 10, 75, 50);
+  rect(0, 85, width, 65);
   
   fill(255);
-  
-  //Convert weatherValue to a string variable and displays it
-  weatherValueStr = nf(weatherValue);
-  text(weatherValueStr, 160, 60, 30, 20);
-  text("weatherValue", 160, 85);
-  
-  //Checks weatherMode and displays Snow, Rain or None depending on the conditions
-  if (weatherMode == 1)
-  { 
-    weatherModeStr = "Rain";
-  }
-  else if (weatherMode == 2)
-  {
-    weatherModeStr = "Snow";
-  }
-  else
-  {
-    weatherModeStr = "None";
-  }
-  
-  text(weatherModeStr, 240, 60, 40, 20);
-  text("weatherMode", 240, 85);
   
   //Display time last updated
   CurrentD = nf(day(), 2);
@@ -554,12 +405,29 @@ public void displayReturnedValues()
   CurrentY = nf(year(), 4);
   CurrentH = nf(hour(), 2);
   CurrentMin = nf(minute(), 2);
+  
+  text("OS_Radar last updated", 5, 100);
+  text(CurrentY + "/" + CurrentM + "/" + CurrentD + " " + CurrentH + "h" + CurrentMin, 5, 115);
 
-  text("Last updated", 245, 25);
-  text(CurrentY + "/" + CurrentM + "/" + CurrentD, 245, 42);
-  text(CurrentH + "h" + CurrentMin, 245, 55);
-    
-}
+  //Convert weatherValue to a string variable and displays it
+  weatherValueStr = nf(weatherValue);
+  text("Value", 5, 135);
+  text(weatherValueStr, 5, 135, 30, 20);
+
+  //Checks weatherMode and displays Snow, Rain or None depending on the conditions
+  //weatherModeStr = GetPrecipitationModeFromTable(WeatherIDTable, weatherID);
+  text("Mode", 85, 135);
+  text(weatherMode, 85, 135, 40, 20);
+
+  text("OWM last updated (GMT)", width/2-25, 100);
+  text(LastUpdateDateTime.year + "/" + LastUpdateDateTime.month + "/" + LastUpdateDateTime.day + " " + LastUpdateDateTime.hour + "h" + LastUpdateDateTime.minute, width/2-25, 115);
+  
+  text("OWM Number", width/2-25, 135);
+  text(nf(weatherID), width/2-25, 135, 30, 20);
+  
+  text("OWM Type", width/2 + 75, 135);
+  text(weatherType, width/2 + 75, 135, 150, 20);
+  }
 
 
 // Adds a logger to the program to keep track of changes to Olympia
@@ -605,7 +473,7 @@ public void logWeatherDataWriteRow()
     newRow.setString("Date", CurrentY + "/" + CurrentM + "/" + CurrentD);
     newRow.setString("Time", CurrentH + ":" + CurrentMin);
     newRow.setString("WeatherOverride", str(isOverridden));
-    newRow.setString("WeatherMode", weatherModeStr);
+    newRow.setString("WeatherMode", weatherMode);
     newRow.setString("WeatherValue", weatherValueStr);
     newRow.setString("Clouds", cloudsStr); 
     newRow.setString("Temperature", tempValueStr);
@@ -618,7 +486,7 @@ public void logWeatherDataWriteRow()
     newRow.setString("Date", CurrentY + "/" + CurrentM + "/" + CurrentD);
     newRow.setString("Time", CurrentH + ":" + CurrentMin);
     newRow.setString("WeatherOverride", str(isOverridden));
-    newRow.setString("WeatherMode", weatherModeStr);
+    newRow.setString("WeatherMode", weatherMode);
     newRow.setString("WeatherValue", weatherValueStr);
     newRow.setString("Clouds", cloudsStr); 
     newRow.setString("Temperature", tempValueStr);
@@ -629,20 +497,114 @@ public void logWeatherDataWriteRow()
   //Takes the Init* date and time variables as the logfile name
   saveTable(logWeatherData, "log/" + InitY + InitM + InitD + "-" + InitH + "h" + InitMin + ".csv");
 }
-
-// Sends a GET request to input URL and returns whether URL is OK
-public boolean isURLOK(String URL)
-{
-  GetRequest URLGetRequest = new GetRequest(URL);
-  URLGetRequest.send();
+class DateTime {
+  int year, month, day;
+  int hour, minute, second;
+  String[] ymd = new String[3];
+  String[] hms = new String[3];
+  String YearMonthDay;
+  String HourMinuteSecond;
+  String[] DateTimeArray = new String[2];
+  String DateTimeString;
   
-  if (URLGetRequest.getHeader("Status") == "Status: 200 OK")
-  {
-    return true;
+  DateTime(int _year, int _month, int _day, int _hour, int _minute, int _second) {
+    year = _year;
+    month = _month;
+    day = _day;
+    hour = _hour;
+    minute = _minute;
+    second = _second;
+    
+    ymd[0] = str(year);
+    ymd[1] = str(month);
+    ymd[2] = str(day);
+    
+    hms[0] = str(hour);
+    hms[1] = str(minute);
+    hms[2] = str(second);
+    
+    YearMonthDay = join(ymd, "-");
+    HourMinuteSecond = join(hms, ":");
+    
+    DateTimeArray[0] = YearMonthDay;
+    DateTimeArray[1] = HourMinuteSecond;
+    
+    DateTimeString = join(DateTimeArray, "T");
   }
-  else
-  {
-    return false;
+  
+  public void UpdateDateTimeString() {
+    ymd[0] = nf(year, 4);
+    ymd[1] = nf(month, 2);
+    ymd[2] = nf(day, 2);
+    
+    hms[0] = nf(hour, 2);
+    hms[1] = nf(minute, 2);
+    hms[2] = nf(second, 2);
+    
+    YearMonthDay = join(ymd, "-");
+    HourMinuteSecond = join(hms, ":");
+    
+    DateTimeArray[0] = YearMonthDay;
+    DateTimeArray[1] = HourMinuteSecond;
+    
+    DateTimeString = join(DateTimeArray, "T");
+  }
+  
+}
+
+public DateTime DateStringToDateTime(String datestring) {
+  String[] datesplit = split(datestring, "-");
+  String[] daytime = split(datesplit[2], "T");
+  String[] time = split(daytime[1], ":");
+  
+  int year = PApplet.parseInt(datesplit[0]);
+  int month = PApplet.parseInt(datesplit[1]);
+  int day = PApplet.parseInt(daytime[0]);
+  int hour = PApplet.parseInt(time[0]);
+  int minute = PApplet.parseInt(time[1]);
+  int second = PApplet.parseInt(time[2]);
+  
+  DateTime OutputDateTime = new DateTime(year, month, day, hour, minute, second);
+  
+  return OutputDateTime;
+}
+/*
+
+OpenWeatherMap Parser
+Weather condition codes to Precipitation Mode and Value
+
+Looks at the weather number value, looks it up in the table csv and outputs the precipitation mode and value
+*/
+
+Table WeatherIDTable;
+
+public void loadWeatherIDTable() {
+  WeatherIDTable = loadTable("WeatherIDTable.csv", "header");
+}
+
+public String GetPrecipitationModeFromTable(Table WeatherIDTable, int WeatherID) {
+  // If input WeatherIDTable is null, return no. Otherwise find the row with the matching WeatherID Code variable
+  // and return the corresponding PrecipitationMode
+  if (WeatherIDTable == null) {
+    return "no";
+  }
+  else {
+    TableRow result = WeatherIDTable.findRow(nf(WeatherID), "Code");
+    println(result.getString("PrecipitationMode"));
+    return result.getString("PrecipitationMode");
+  }
+}
+
+public int GetValueFromTable(Table WeatherIDTable, int WeatherID) {
+  // If input WeatherIDTable is null, return no. Otherwise find the row with the matching WeatherID Code variable
+  // and return the corresponding Value
+  if (WeatherIDTable == null) {
+    return 0;
+  }
+  else {
+    TableRow result = WeatherIDTable.findRow(nf(WeatherID), "Code");
+    println(result.getString("Value"));
+    return PApplet.parseInt(result.getString("Value"));
   }
 }
   public void settings() {  size (400,400); }
